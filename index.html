@@ -1,0 +1,63 @@
+#!/bin/bash
+set -e
+
+apt update -y
+apt install -y git
+rm -rf provisioner-node-setup
+git clone --depth 1 --branch v0.0.14 https://github.com/GlueOps/provisioner-node-setup.git
+cd provisioner-node-setup
+
+export DEVBOX_USE_VERSION=0.13.0
+curl -fsSL https://get.jetpack.io/devbox | bash -s -- -f
+
+PRIVATE_KEY_FILE="$HOME/.ssh/id_rsa"
+PUBLIC_KEY_FILE="$HOME/.ssh/id_rsa.pub"
+AUTHORIZED_KEYS_FILE="$HOME/.ssh/authorized_keys"
+
+# --- 1. Generate SSH Key Pair if it doesn't exist ---
+if [ ! -f "$PRIVATE_KEY_FILE" ]; then
+  echo "SSH private key not found. Generating a new one..."
+  # Create a new ed25519 key pair without a passphrase
+  ssh-keygen -t ed25519 -N "" -f "$PRIVATE_KEY_FILE"
+else
+  echo "Existing SSH private key found."
+fi
+
+# --- 2. Authorize the Public Key for Local SSH ---
+# Create the .ssh directory and authorized_keys file if they don't exist
+mkdir -p "$HOME/.ssh"
+touch "$AUTHORIZED_KEYS_FILE"
+
+# Add the public key to authorized_keys if it's not already there
+if ! grep -q -f "$PUBLIC_KEY_FILE" "$AUTHORIZED_KEYS_FILE"; then
+  echo "Authorizing public key for local SSH access..."
+  cat "$PUBLIC_KEY_FILE" >> "$AUTHORIZED_KEYS_FILE"
+else
+  echo "Public key is already authorized."
+fi
+chmod 700 /root/.ssh; chmod 600 /root/.ssh/authorized_keys; chmod 600 /root/.ssh/id_rsa
+
+# --- 3. Set Correct Permissions (Crucial for SSH) ---
+chmod 700 "$HOME/.ssh"
+chmod 600 "$AUTHORIZED_KEYS_FILE"
+
+# --- 4. Run the Ansible Playbook via SSH ---
+export ANSIBLE_ROLES_PATH=./roles
+export ANSIBLE_HOST_KEY_CHECKING=False
+export TAILSCALE_AUTH_KEY="jklasd"
+
+echo "Running Ansible playbook via SSH to localhost..."
+
+#ansible-playbook -i "venkatamutya ansible_host=127.0.0.1 ansible_user=$(whoami) ansible_ssh_private_key_file=$HOME/.ssh/id_rsa," playbooks/server-install.yml
+
+
+#devbox shell -- ansible-playbook -i 'venkatamutya,' -e ansible_host=127.0.0.1 -e "keys='$(cat ~/.ssh/authorized_keys)'" -e ansible_connection=local -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa," playbooks/server-install.yml
+
+devbox shell <<EOF
+ansible-playbook -i 'venkatamutya,' \
+  -e ansible_host=127.0.0.1 \
+  -e "keys='$(cat ~/.ssh/authorized_keys)'" \
+  -e ansible_connection=local \
+  -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa" \
+  playbooks/server-install.yml
+EOF
