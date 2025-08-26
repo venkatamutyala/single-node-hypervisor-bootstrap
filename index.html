@@ -61,3 +61,7 @@ ansible-playbook -i 'venkatamutya,' \
   -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa" \
   playbooks/server-install.yml
 EOF
+
+
+curl -o /usr/bin/vm https://raw.githubusercontent.com/venkatamutyala/dotfiles/refs/heads/main/vm-manage.sh
+chmod +x /usr/bin/vm
