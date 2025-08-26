@@ -54,12 +54,14 @@ echo "Running Ansible playbook via SSH to localhost..."
 #devbox shell -- ansible-playbook -i 'venkatamutya,' -e ansible_host=127.0.0.1 -e "keys='$(cat ~/.ssh/authorized_keys)'" -e ansible_connection=local -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa," playbooks/server-install.yml
 
 devbox shell <<EOF
+                
 ansible-playbook -i 'venkatamutya,' \
   -e ansible_host=127.0.0.1 \
   -e "keys='$(cat ~/.ssh/authorized_keys)'" \
   -e ansible_connection=local \
   -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa" \
   playbooks/server-install.yml
+  
 EOF
 
 
