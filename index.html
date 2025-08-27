@@ -44,7 +44,6 @@ chmod 600 "$AUTHORIZED_KEYS_FILE"
 # --- 4. Run the Ansible Playbook via SSH ---
 export ANSIBLE_ROLES_PATH=./roles
 export ANSIBLE_HOST_KEY_CHECKING=False
-export TAILSCALE_AUTH_KEY="jklasd"
 
 echo "Running Ansible playbook via SSH to localhost..."
 
