@@ -63,6 +63,6 @@ ansible-playbook -i 'venkatamutya,' \
   
 EOF
 
-rm /usr/bin/vm
+rm -rf /usr/bin/vm
 curl -o /usr/bin/vm https://raw.githubusercontent.com/venkatamutyala/dotfiles/refs/heads/main/vm-manage.sh
 chmod +x /usr/bin/vm
